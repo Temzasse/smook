@@ -4,21 +4,23 @@ import { useModel } from '../smook';
 
 const Orders = () => {
   const [orderName, setOrderName] = React.useState('');
+
   const orderM = useModel('order');
   const userM = useModel('user');
+
   const fullName = userM.select(userM.selectors.getFullName);
   const orders = orderM.select('orders');
   const numOfOrders = orderM.select(orderM.selectors.getNumOfOrders);
-  const fetchOrders = orderM.action('fetchOrders');
-  const _addOrder = orderM.action('addOrder');
+
+  const { fetchOrders, addOrder } = orderM.actions;
 
   React.useEffect(() => {
     fetchOrders();
   }, []);
 
-  const addOrder = () => {
+  const _addOrder = () => {
     if (orderName) {
-      _addOrder(orderName);
+      addOrder(orderName);
       setOrderName('');
     }
   };
@@ -51,7 +53,7 @@ const Orders = () => {
 
       <input value={orderName} onChange={e => setOrderName(e.target.value)} />
       <br />
-      <button onClick={addOrder}>Add order</button>
+      <button onClick={_addOrder}>Add order</button>
     </Wrapper>
   );
 };

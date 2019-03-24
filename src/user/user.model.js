@@ -6,6 +6,7 @@ const userModel = {
 
   state: {
     profile: fetchable.value(null),
+    isLoggedIn: false,
   },
 
   selectors: {
@@ -16,6 +17,16 @@ const userModel = {
   },
 
   actions: {
+    login: state => ({
+      ...state,
+      isLoggedIn: true,
+    }),
+
+    logout: state => ({
+      ...state,
+      isLoggedIn: false,
+    }),
+
     setProfile: fetchable.reducer('profile'),
 
     fetchProfile: effect(async function(self, getState, args) {

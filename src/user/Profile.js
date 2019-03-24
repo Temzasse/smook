@@ -5,9 +5,13 @@ import { useModel } from '../smook';
 const Profile = () => {
   const userM = useModel('user');
   const orderM = useModel('order');
+
   const profile = userM.select('profile');
+  const isLoggedIn = userM.select('isLoggedIn');
   const numOfOrders = orderM.select(orderM.selectors.getNumOfOrders);
-  const fetchProfile = userM.action('fetchProfile');
+
+  const { fetchProfile } = userM.actions;
+  const { login, logout } = userM.actions;
 
   React.useEffect(() => {
     fetchProfile();
@@ -18,6 +22,14 @@ const Profile = () => {
   return (
     <Wrapper>
       <h1>Profile:</h1>
+
+      <div>Is logged in: {isLoggedIn ? 'Yes' : 'No'}</div>
+
+      <br />
+
+      <button onClick={isLoggedIn ? logout : login}>
+        {isLoggedIn ? 'Logout' : 'Login'}
+      </button>
 
       {profile.status === 'LOADING' && <div>Loading profile...</div>}
 
@@ -46,7 +58,7 @@ const Profile = () => {
         </>
       )}
 
-      <br/>
+      <br />
 
       <div>Number of orders: {numOfOrders}</div>
     </Wrapper>

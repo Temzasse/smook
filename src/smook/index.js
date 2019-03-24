@@ -54,13 +54,6 @@ export const useModel = name => {
     }, {});
   }, []); // Having no deps here should be ok?
 
-  const action = actionName => {
-    if (!model.actions[actionName]) {
-      throw Error(`Model has no action called: ${actionName}!`);
-    }
-    return actions[actionName];
-  };
-
   const select = fieldNameOrSelectorFn => {
     if (typeof fieldNameOrSelectorFn === 'string') {
       return state[model.name][fieldNameOrSelectorFn];
@@ -70,7 +63,7 @@ export const useModel = name => {
   };
 
   return {
-    action,
+    actions,
     select,
     selectors: model.selectors,
   };
