@@ -1,4 +1,4 @@
-import { effect, fetchable } from '../remesh';
+import { effect, fetchable } from '../smook';
 import { sleep } from '../helpers';
 
 const orderModel = {

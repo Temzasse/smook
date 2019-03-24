@@ -1,5 +1,8 @@
 import React from 'react';
 
+// TODO: come up with a cooler name :p
+// Smook -> State Management hOOk
+
 const Context = React.createContext({});
 
 export const StoreProvider = ({ store, children }) => {

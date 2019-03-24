@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { useModel } from '../remesh';
+import { useModel } from '../smook';
 
 const Profile = () => {
   const userM = useModel('user');
