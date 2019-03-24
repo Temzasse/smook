@@ -1,7 +1,7 @@
 import { effect, fetchable } from '../smook';
 import { sleep } from '../helpers';
 
-const orderModel = {
+const userModel = {
   name: 'user',
 
   state: {
@@ -39,4 +39,4 @@ const orderModel = {
   },
 };
 
-export default orderModel;
+export default userModel;
