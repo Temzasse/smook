@@ -9,6 +9,7 @@ export const StoreProvider = ({ store, children }) => {
   const { rootReducer, initialState, models } = store;
   const [state, dispatch] = React.useReducer(rootReducer, initialState);
 
+  // TODO: is there a better way to log prev + next state?
   React.useEffect(() => {
     console.log('%c state ', 'background: #b3ffaf; color: #12510f', state);
   }, [state]);
@@ -28,6 +29,7 @@ export const StoreProvider = ({ store, children }) => {
   );
 };
 
+// TODO: can we bail out of unnecessary renders?
 export const useModel = name => {
   const store = React.useContext(Context);
   const model = store.models[name];
