@@ -1,7 +1,7 @@
 import React from 'react';
 
 // TODO: come up with a cooler name :p
-// Smook -> State Management hOOk
+// Smook -> State Management hOOK
 
 const Context = React.createContext({});
 
@@ -37,10 +37,10 @@ export const useModel = name => {
   const getState = () => state;
 
   const actions = React.useMemo(() => {
-    return Object.entries(model.actions).reduce((acc, [key, value]) => {
+    return Object.entries(model.actions).reduce((acc, [actionName, value]) => {
       if (value.is === 'EFFECT') {
-        acc[key] = (...args) => {
-          dispatch({ type: key, payload: args });
+        acc[actionName] = (...args) => {
+          dispatch({ type: `${model.name}/${actionName}`, payload: args });
           return value.fn(
             { actions: acc, selectors: model.selectors },
             getState,
@@ -48,7 +48,8 @@ export const useModel = name => {
           );
         };
       } else {
-        acc[key] = payload => dispatch({ type: key, payload });
+        acc[actionName] = payload =>
+          dispatch({ type: `${model.name}/${actionName}`, payload });
       }
       return acc;
     }, {});
@@ -87,7 +88,7 @@ export const createStore = models => {
     const reducerHandler = Object.entries(model.actions)
       .filter(([name, fn]) => fn.is !== 'EFFECT')
       .reduce((acc, [name, fn]) => {
-        acc[name] = fn;
+        acc[`${model.name}/${name}`] = fn;
         return acc;
       }, {});
 
