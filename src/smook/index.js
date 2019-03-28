@@ -8,10 +8,12 @@ const Context = React.createContext({});
 export const StoreProvider = ({ store, children }) => {
   const { rootReducer, initialState, models } = store;
   const [state, dispatch] = React.useReducer(rootReducer, initialState);
+  const currentState = React.useRef(state);
 
   // TODO: is there a better way to log prev + next state?
   React.useEffect(() => {
     console.log('%c state ', 'background: #b3ffaf; color: #12510f', state);
+    currentState.current = state;
   }, [state]);
 
   const loggedDispatch = action => {
@@ -22,8 +24,12 @@ export const StoreProvider = ({ store, children }) => {
     dispatch(action);
   };
 
+  const getState = () => ({ ...currentState.current });
+
   return (
-    <Context.Provider value={{ state, dispatch: loggedDispatch, models }}>
+    <Context.Provider
+      value={{ state, getState, dispatch: loggedDispatch, models }}
+    >
       {children}
     </Context.Provider>
   );
@@ -32,41 +38,56 @@ export const StoreProvider = ({ store, children }) => {
 // TODO: can we bail out of unnecessary renders?
 export const useModel = name => {
   const store = React.useContext(Context);
-  const model = store.models[name];
-  const { state, dispatch } = store;
-  const getState = () => state;
 
-  const actions = React.useMemo(() => {
-    return Object.entries(model.actions).reduce((acc, [actionName, value]) => {
-      if (value.is === 'EFFECT') {
-        acc[actionName] = (...args) => {
-          dispatch({ type: `${model.name}/${actionName}`, payload: args });
-          return value.fn(
-            { actions: acc, selectors: model.selectors },
-            getState,
-            ...args
-          );
+  const allActions = React.useMemo(
+    () =>
+      Object.values(store.models).reduce((allActionsAcc, model) => {
+        const actions = Object.entries(model.actions).reduce(
+          (modelActionsAcc, [actionName, value]) => {
+            if (value.is === 'EFFECT') {
+              modelActionsAcc[actionName] = (...args) => {
+                store.dispatch({
+                  type: `${model.name}/${actionName}`,
+                  payload: args,
+                });
+
+                return value.fn(allActionsAcc, store.getState, ...args);
+              };
+            } else {
+              modelActionsAcc[actionName] = payload =>
+                store.dispatch({
+                  type: `${model.name}/${actionName}`,
+                  payload,
+                });
+            }
+
+            return modelActionsAcc;
+          },
+          {}
+        );
+
+        allActionsAcc[model.name] = {
+          actions,
+          selectors: model.selectors,
         };
-      } else {
-        acc[actionName] = payload =>
-          dispatch({ type: `${model.name}/${actionName}`, payload });
-      }
-      return acc;
-    }, {});
-  }, []); // Having no deps here should be ok?
+
+        return allActionsAcc;
+      }, {}),
+    [] // Having no deps here should be ok?
+  );
 
   const select = fieldNameOrSelectorFn => {
     if (typeof fieldNameOrSelectorFn === 'string') {
-      return state[model.name][fieldNameOrSelectorFn];
+      return store.state[name][fieldNameOrSelectorFn];
     } else {
-      return fieldNameOrSelectorFn(state);
+      return fieldNameOrSelectorFn(store.state);
     }
   };
 
   return {
-    actions,
     select,
-    selectors: model.selectors,
+    actions: allActions[name].actions,
+    selectors: store.models[name].selectors,
   };
 };
 

@@ -29,9 +29,9 @@ const userModel = {
 
     setProfile: fetchable.reducer('profile'),
 
-    fetchProfile: effect(async function(self, getState, args) {
+    fetchProfile: effect(async function(models, getState, args) {
       try {
-        self.actions.setProfile(fetchable.loading); // show loading spinner
+        models.user.actions.setProfile(fetchable.loading); // show loading spinner
 
         await sleep(); // mock API call
 
@@ -41,10 +41,15 @@ const userModel = {
           githubUrl: 'https://github.com/Temzasse',
         };
 
-        self.actions.setProfile(fetchable.success(profile));
+        models.user.actions.setProfile(fetchable.success(profile));
+
+        await sleep(2000);
+
+        const fullName = models.user.selectors.getFullName(getState());
+        console.log('>>> full name', fullName);
       } catch (error) {
         console.log('> Error in fetchProfile', error);
-        self.actions.setProfile(fetchable.error(error.message));
+        models.user.actions.setProfile(fetchable.error(error.message));
       }
     }),
   },

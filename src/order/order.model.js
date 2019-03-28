@@ -26,9 +26,9 @@ const orderModel = {
 
     setOrders: fetchable.reducer('orders'),
 
-    fetchOrders: effect(async function(self, args) {
+    fetchOrders: effect(async function(models, args) {
       try {
-        self.actions.setOrders(fetchable.loading); // show loading spinner
+        models.order.actions.setOrders(fetchable.loading); // show loading spinner
 
         await sleep(1000); // mock API call
 
@@ -38,10 +38,13 @@ const orderModel = {
           { id: 3, name: 'Bananas' },
         ];
 
-        self.actions.setOrders(fetchable.success(orders));
+        models.order.actions.setOrders(fetchable.success(orders));
+
+        await sleep(3000);
+        models.user.actions.fetchProfile();
       } catch (error) {
         console.log('> Error in fetchOrders', error);
-        self.actions.setOrders(fetchable.error(error.message));
+        models.order.actions.setOrders(fetchable.error(error.message));
       }
     }),
   },
