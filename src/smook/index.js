@@ -1,7 +1,6 @@
 import React from 'react';
 
-// TODO: come up with a cooler name :p
-// Smook -> State Management hOOK
+// Smook -> State Management hOOK 🔱
 
 const Context = React.createContext({});
 
@@ -11,15 +10,26 @@ export const StoreProvider = ({ store, children }) => {
   const currentState = React.useRef(state);
 
   // TODO: is there a better way to log prev + next state?
+  // At the moment the next state is not logged in the same group...
   React.useEffect(() => {
-    console.log('%c state ', 'background: #b3ffaf; color: #12510f', state);
+    console.log(
+      '%c next state ',
+      'background: #b3ffaf; color: #12510f;',
+      state
+    );
+
+    // Update ref to point in the current state
     currentState.current = state;
   }, [state]);
 
   const loggedDispatch = action => {
     console.group(`${action.type}`);
-    console.log('%c prev ', 'background: #99dbff; color: #134966', state);
-    console.log('%c action ', 'background: #ffbcff; color: #440a44', action);
+    console.log(
+      '%c prev state ',
+      'background: #99dbff; color: #134966;',
+      state
+    );
+    console.log('%c action ', 'background: #ffbcff; color: #440a44;', action);
     console.groupEnd();
     dispatch(action);
   };
@@ -39,6 +49,7 @@ export const StoreProvider = ({ store, children }) => {
 export const useModel = name => {
   const store = React.useContext(Context);
 
+  // Memoize actions since they need to be created only once
   const allActions = React.useMemo(
     () =>
       Object.values(store.models).reduce((allActionsAcc, model) => {
