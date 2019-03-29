@@ -1,9 +1,9 @@
-import { ThingState, ThingModel } from './thing/thing.types';
+import { State as ThingState, ThingModel } from './thing/thing.model';
 
 export interface Models {
   thing: ThingModel;
 }
 
-export interface State {
+export interface RootState {
   thing: ThingState;
 }

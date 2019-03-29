@@ -1,18 +1,25 @@
 import { sleep } from '../../helpers';
-import { Action, effect } from '../smook';
-import { State, Models } from '../store';
-import { Thing, ThingState } from './thing.types';
+import { Model, Action, effect } from '../smook';
+import { RootState, Models } from '../store';
+import { Thing, } from './thing.types';
+
+export interface State {
+  things: Thing[];
+  isLoading: boolean;
+  hasError: boolean;
+}
 
 const thingModel = {
   name: 'thing',
 
   state: {
-    items: [],
-    foo: 1,
+    things: [],
+    isLoading: false,
+    hasError: false,
   },
 
   selectors: {
-    getNumOfItems: (state: State) => state.thing.items.length,
+    getNumOfThings: (state: RootState) => state.thing.things.length,
   },
 
   actions: {
@@ -21,27 +28,33 @@ const thingModel = {
       getState,
       thing
     ) {
-      console.log(thing.bar);
+      console.log(thing.name);
       await sleep(1000);
     }),
 
-    fetchItems: effect<Models, State>(async function(models, getState) {
+    fetchThings: effect<Models, RootState>(async function(models, getState) {
       await sleep(1000);
       const state = getState();
-      console.log(state);
-      models.thing.actions.addItem(1);
+      console.log(state.thing.hasError);
+      models.thing.actions.addThing({
+        id: '1',
+        name: 'Foobar',
+        size: 1,
+      });
     }),
 
-    addItem: (state: ThingState, action: Action<number>) => ({
+    addThing: (state: State, action: Action<Thing>): State => ({
       ...state,
-      items: [...state.items, action.payload],
+      things: [...state.things, action.payload],
     }),
 
-    clearItems: (state: ThingState) => ({
+    clearThings: (state: State): State => ({
       ...state,
-      items: [],
+      things: [],
     }),
   },
 };
+
+export type ThingModel = Model<typeof thingModel, State>;
 
 export default thingModel;

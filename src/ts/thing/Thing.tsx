@@ -4,11 +4,15 @@ import { Models } from '../store';
 
 const Thing = () => {
   const thingM = useModel<Models, 'thing'>('thing');
-  const items = thingM.select('items');
-  const foo = thingM.select('foo');
-  const bar = thingM.select('bar');
-  const numOfItems = thingM.select(thingM.selectors.getNumOfItems);
-  const { addItem, clearItems, fetchItems, saveThing } = thingM.actions;
+  const things = thingM.select('things');
+  const hasError = thingM.select('hasError');
+  const isLoading = thingM.select('isLoading');
+  const numOfThings = thingM.select(thingM.selectors.getNumOfThings);
+  const { addThing, clearThings, fetchThings, saveThing } = thingM.actions;
+
+  React.useEffect(() => {
+    fetchThings();
+  }, []);
 
   // saveThing({
   //   bar: 1,
