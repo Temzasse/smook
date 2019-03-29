@@ -1,4 +1,4 @@
-import { Model } from './smook';
+import { Model } from '../smook';
 import thingModel from './thing.model';
 
 export interface Thing {

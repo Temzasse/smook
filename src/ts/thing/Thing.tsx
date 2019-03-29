@@ -1,8 +1,8 @@
 import React from 'react';
-import { useModel } from './smook';
-import { Models } from './store';
+import { useModel } from '../smook';
+import { Models } from '../store';
 
-const Orders = () => {
+const Thing = () => {
   const thingM = useModel<Models, 'thing'>('thing');
   const items = thingM.select('items');
   const foo = thingM.select('foo');
@@ -10,18 +10,18 @@ const Orders = () => {
   const numOfItems = thingM.select(thingM.selectors.getNumOfItems);
   const { addItem, clearItems, fetchItems, saveThing } = thingM.actions;
 
-  saveThing({
-    bar: 1,
-    foo: '1',
-  });
+  // saveThing({
+  //   bar: 1,
+  //   foo: '1',
+  // });
 
-  fetchItems();
+  // fetchItems();
 
-  addItem(1);
+  // addItem(1);
 
-  clearItems();
+  // clearItems();
 
   return <div>Typed</div>;
 };
 
-export default Orders;
+export default Thing;

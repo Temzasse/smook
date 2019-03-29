@@ -12,8 +12,8 @@ type Unpacked<T> = T extends (infer U)[]
 type ArgumentTypes<F extends Function> = F extends (...args: infer A) => any
   ? A
   : never;
-/* ***************************************************************************/
 
+/* ******************************* INTERNAL ******************************** */
 interface ModelDefinition {
   name: string;
   state: {
@@ -41,7 +41,6 @@ interface Effect<F> {
 }
 
 /* ******************************** EXPORTS ******************************** */
-
 export interface Action<P> {
   type: string;
   payload: P;

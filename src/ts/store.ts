@@ -1,4 +1,4 @@
-import { ThingState, ThingModel } from './thing.types';
+import { ThingState, ThingModel } from './thing/thing.types';
 
 export interface Models {
   thing: ThingModel;

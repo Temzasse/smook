@@ -1,5 +1,5 @@
-import { effect, fetchable } from '../smook';
-import { sleep } from '../helpers';
+import { effect, fetchable } from '../../smook';
+import { sleep } from '../../helpers';
 
 const orderModel = {
   name: 'order',

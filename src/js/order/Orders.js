@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { useModel } from '../smook';
+import { useModel } from '../../smook';
 
 const Orders = () => {
   const [orderName, setOrderName] = React.useState('');
