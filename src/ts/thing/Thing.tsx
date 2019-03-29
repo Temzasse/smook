@@ -8,16 +8,11 @@ const Thing = () => {
   const hasError = thingM.select('hasError');
   const isLoading = thingM.select('isLoading');
   const numOfThings = thingM.select(thingM.selectors.getNumOfThings);
-  const { addThing, clearThings, fetchThings, saveThing } = thingM.actions;
+  const { addThing, clearThings, fetchThings } = thingM.actions;
 
   React.useEffect(() => {
     fetchThings();
   }, []);
-
-  // saveThing({
-  //   bar: 1,
-  //   foo: '1',
-  // });
 
   // fetchItems();
 
