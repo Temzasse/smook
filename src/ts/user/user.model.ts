@@ -1,5 +1,12 @@
-import { effect, fetchable } from '../../smook';
 import { sleep } from '../../helpers';
+import { Model, fetchable, FetchableValue } from '../smook';
+import { effect } from '../smook.typed';
+import { Profile } from './user.types';
+
+export interface State {
+  profile: FetchableValue<Profile>;
+  isLoggedIn: boolean;
+}
 
 const userModel = {
   name: 'user',
@@ -17,19 +24,19 @@ const userModel = {
   },
 
   actions: {
-    login: state => ({
+    login: (state: State) => ({
       ...state,
       isLoggedIn: true,
     }),
 
-    logout: state => ({
+    logout: (state: State) => ({
       ...state,
       isLoggedIn: false,
     }),
 
     setProfile: fetchable.reducer('profile'),
 
-    fetchProfile: effect(async function(models, getState, args) {
+    fetchProfile: effect(async function(models, getState) {
       try {
         models.user.actions.setProfile(fetchable.loading); // show loading spinner
 
@@ -54,5 +61,7 @@ const userModel = {
     }),
   },
 };
+
+export type UserModel = Model<typeof userModel, State>;
 
 export default userModel;

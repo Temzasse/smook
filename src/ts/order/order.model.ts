@@ -1,5 +1,11 @@
-import { effect, fetchable } from '../../smook';
 import { sleep } from '../../helpers';
+import { Action, Model, fetchable, FetchableValue } from '../smook';
+import { effect } from '../smook.typed';
+import { Order } from './order.types';
+
+export interface State {
+  orders: FetchableValue<Order[]>;
+}
 
 const orderModel = {
   name: 'order',
@@ -13,7 +19,7 @@ const orderModel = {
   },
 
   actions: {
-    addOrder: (state, action) => ({
+    addOrder: (state: State, action: Action<string>) => ({
       ...state,
       orders: {
         ...state.orders,
@@ -26,9 +32,10 @@ const orderModel = {
 
     setOrders: fetchable.reducer('orders'),
 
-    fetchOrders: effect(async function(models, args) {
+    fetchOrders: effect(async function(models) {
       try {
-        models.order.actions.setOrders(fetchable.loading); // show loading spinner
+        // Show loading spinner
+        models.order.actions.setOrders(fetchable.loading);
 
         await sleep(1000); // mock API call
 
@@ -49,5 +56,7 @@ const orderModel = {
     }),
   },
 };
+
+export type OrderModel = Model<typeof orderModel, State>;
 
 export default orderModel;

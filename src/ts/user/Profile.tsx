@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { useModel } from '../../smook';
+import { useModel } from '../smook.typed';
 
 const Profile = () => {
   const userM = useModel('user');
@@ -26,7 +26,7 @@ const Profile = () => {
 
       <br />
 
-      <button onClick={isLoggedIn ? logout : login}>
+      <button onClick={() => (isLoggedIn ? logout() : login())}>
         {isLoggedIn ? 'Logout' : 'Login'}
       </button>
 

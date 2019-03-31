@@ -43,37 +43,24 @@ export const StoreProvider = ({ store, disableLogs, children }) => {
 
   const getState = () => currentState.current;
 
-  return (
-    <Context.Provider
-      value={{ state, getState, dispatch: loggedDispatch, models }}
-    >
-      {children}
-    </Context.Provider>
-  );
-};
-
-// TODO: can we bail out of unnecessary renders?
-export const useModel = name => {
-  const store = React.useContext(Context);
-
   // Memoize actions since they need to be created only once
-  const allActions = React.useMemo(
+  const enhancedActions = React.useMemo(
     () =>
-      Object.values(store.models).reduce((allActionsAcc, model) => {
+      Object.values(models).reduce((allActionsAcc, model) => {
         const actions = Object.entries(model.actions).reduce(
           (modelActionsAcc, [actionName, value]) => {
             if (value.is === 'EFFECT') {
               modelActionsAcc[actionName] = (...args) => {
-                store.dispatch({
+                loggedDispatch({
                   type: `${model.name}/${actionName}`,
                   payload: args,
                 });
 
-                return value.fn(allActionsAcc, store.getState, ...args);
+                return value.fn(allActionsAcc, getState, ...args);
               };
             } else {
               modelActionsAcc[actionName] = payload =>
-                store.dispatch({
+                loggedDispatch({
                   type: `${model.name}/${actionName}`,
                   payload,
                 });
@@ -94,6 +81,25 @@ export const useModel = name => {
     [] // Having no deps here should be ok?
   );
 
+  return (
+    <Context.Provider
+      value={{
+        models,
+        state,
+        getState,
+        dispatch: loggedDispatch,
+        actions: enhancedActions,
+      }}
+    >
+      {children}
+    </Context.Provider>
+  );
+};
+
+// TODO: can we bail out of unnecessary renders?
+export const useModel = name => {
+  const store = React.useContext(Context);
+
   const select = fieldNameOrSelectorFn => {
     if (typeof fieldNameOrSelectorFn === 'string') {
       return store.state[name][fieldNameOrSelectorFn];
@@ -104,7 +110,7 @@ export const useModel = name => {
 
   return {
     select,
-    actions: allActions[name].actions,
+    actions: store.actions[name].actions,
     selectors: store.models[name].selectors,
   };
 };

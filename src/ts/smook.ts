@@ -2,6 +2,7 @@ import {
   useModel as _useModel,
   effect as _effect,
   createStore as _createStore,
+  fetchable as _fetchable,
 } from '../smook';
 
 /* ******************************** HELPERS ******************************** */
@@ -87,4 +88,19 @@ export function typify<M, S>() {
       return effect<M, S, A>(fn);
     },
   };
+}
+
+export const fetchable = _fetchable;
+
+export enum FetchableStatus {
+  INITIAL = 'INITIAL',
+  LOADING = 'LOADING',
+  FAILURE = 'FAILURE',
+  SUCCESS = 'SUCCESS',
+}
+
+export interface FetchableValue<D> {
+  data: D;
+  status: FetchableStatus;
+  error: any;
 }

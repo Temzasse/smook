@@ -19,7 +19,7 @@ const Thing = () => {
 
   // clearItems();
 
-  return <div>Typed</div>;
+  return <div>Things here...</div>;
 };
 
 export default Thing;
