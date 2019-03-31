@@ -1,9 +1,8 @@
 import React from 'react';
-import { useModel } from '../smook';
-import { Models } from '../store';
+import { useModel } from '../smook.typed';
 
 const Thing = () => {
-  const thingM = useModel<Models, 'thing'>('thing');
+  const thingM = useModel('thing');
   const things = thingM.select('things');
   const hasError = thingM.select('hasError');
   const isLoading = thingM.select('isLoading');

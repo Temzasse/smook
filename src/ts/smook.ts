@@ -1,4 +1,8 @@
-import { useModel as _useModel, effect as _effect } from '../smook';
+import {
+  useModel as _useModel,
+  effect as _effect,
+  createStore as _createStore,
+} from '../smook';
 
 /* ******************************** HELPERS ******************************** */
 type Unpacked<T> = T extends (infer U)[]
@@ -68,4 +72,19 @@ export function useModel<M, N extends keyof M>(modelName: N): M[N] {
 
 export function effect<M, S, A = void>(fn: AsyncAction<M, S, A>) {
   return _effect(fn) as Effect<AsyncAction<M, S, A>>;
+}
+
+export function createStore(models: ModelDefinition[]) {
+  return _createStore(models);
+}
+
+export function typify<M, S>() {
+  return {
+    useModel: function<N extends keyof M>(modelName: N) {
+      return useModel<M, N>(modelName);
+    },
+    effect: function<A = void>(fn: AsyncAction<M, S, A>) {
+      return effect<M, S, A>(fn);
+    },
+  };
 }

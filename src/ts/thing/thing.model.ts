@@ -1,6 +1,7 @@
 import { sleep } from '../../helpers';
-import { Model, Action, effect } from '../smook';
-import { RootState, Models } from '../store';
+import { Model, Action } from '../smook';
+import { effect } from '../smook.typed';
+import { RootState } from '../store';
 import { Thing } from './thing.types';
 
 export interface State {
@@ -23,18 +24,14 @@ const thingModel = {
   },
 
   actions: {
-    logThing: effect<Models, RootState, Thing>(async function(
-      models,
-      getState,
-      thing
-    ) {
+    logThing: effect<Thing>(async function(models, getState, thing) {
       await sleep(1000);
       console.log('> Thing:', thing.name);
       const state = getState();
       console.log('> Things now:', state.thing.things);
     }),
 
-    fetchThings: effect<Models, RootState>(async function(models, getState) {
+    fetchThings: effect(async function(models, getState) {
       await sleep(1000);
       const state = getState();
       console.log('> Current things:', state.thing.things);

@@ -4,25 +4,15 @@ import React from 'react';
 
 const Context = React.createContext({});
 
-export const StoreProvider = ({ store, children }) => {
-  const { rootReducer, initialState, models } = store;
-  const [state, dispatch] = React.useReducer(rootReducer, initialState);
-  const currentState = React.useRef(state);
-
-  // TODO: is there a better way to log prev + next state?
-  // At the moment the next state is not logged in the same group...
-  React.useEffect(() => {
+const log = {
+  state: state => {
     console.log(
       '%c next state ',
       'background: #b3ffaf; color: #12510f;',
       state
     );
-
-    // Update ref to point in the current state
-    currentState.current = state;
-  }, [state]);
-
-  const loggedDispatch = action => {
+  },
+  action: (action, state) => {
     console.group(`${action.type}`);
     console.log(
       '%c prev state ',
@@ -31,10 +21,27 @@ export const StoreProvider = ({ store, children }) => {
     );
     console.log('%c action ', 'background: #ffbcff; color: #440a44;', action);
     console.groupEnd();
+  },
+};
+
+export const StoreProvider = ({ store, disableLogs, children }) => {
+  const { rootReducer, initialState, models } = store;
+  const [state, dispatch] = React.useReducer(rootReducer, initialState);
+  const currentState = React.useRef(state);
+
+  // TODO: is there a better way to log prev + next state?
+  // At the moment the next state is not logged in the same group...
+  React.useEffect(() => {
+    if (!disableLogs) log.state(state);
+    currentState.current = state; // Update ref to point in the current state
+  }, [state]);
+
+  const loggedDispatch = action => {
+    if (!disableLogs) log.action(action, state);
     dispatch(action);
   };
 
-  const getState = () => ({ ...currentState.current });
+  const getState = () => currentState.current;
 
   return (
     <Context.Provider
@@ -116,7 +123,7 @@ export const createStore = models => {
     return nextState || state;
   };
 
-  const m = models.reduce((acc, model) => {
+  const _models = models.reduce((acc, model) => {
     const reducerHandler = Object.entries(model.actions)
       .filter(([name, fn]) => fn.is !== 'EFFECT')
       .reduce((acc, [name, fn]) => {
@@ -136,7 +143,7 @@ export const createStore = models => {
   return {
     rootReducer,
     initialState,
-    models: m,
+    models: _models,
   };
 };
 
@@ -145,15 +152,16 @@ export const effect = fn => ({
   fn,
 });
 
-export const fetchableReducer = field => (state, action) => ({
+const fetchableReducer = field => (state, action) => ({
   ...state,
   [field]: { ...state[field], ...action.payload },
 });
 
 export const fetchable = {
-  loading: { status: 'LOADING' },
+  loading: () => ({ status: 'LOADING' }),
   error: error => ({ error, status: 'FAILURE' }),
   success: data => ({ data, status: 'SUCCESS', error: null }),
+  clear: () => ({ status: 'INITIAL', error: null }),
   reducer: fetchableReducer,
   value: initialValue => ({
     data: initialValue,

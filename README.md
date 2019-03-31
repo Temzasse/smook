@@ -1,44 +1,132 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+<div align="center">
 
-## Available Scripts
+<h1>Smook 🔱</h1>
 
-In the project directory, you can run:
+<p>State management in the era of React Hooks.</p>
 
-### `npm start`
+</div>
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+---
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+- 🦆 **Enforce modular architecture.**
+- 🔮 **Mininal boilerplate.**
+- ✨ **Async data fetching made easy.**
 
-### `npm test`
+---
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- [Installation](#installation)
+- [TypeScript](#typescript)
+- [Caveats](#caveats)
 
-### `npm run build`
+## Installation
 
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
+> **NOTE:** not a real npm package yet!
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+```sh
+npm install smook
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+> **TODO:** write instructions...
 
-### `npm run eject`
+## TypeScript
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+First create a model:
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```ts
+// thing.model.ts
 
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+import { Model, Action, effect } from 'smook';
+import { RootState, Models } from '../store';
+import { Thing } from './thing.types';
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+export interface State {
+  things: Thing[];
+  isLoading: boolean;
+  hasError: boolean;
+}
 
-## Learn More
+const thingModel = {
+  name: 'thing',
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+  state: {
+    things: [],
+    isLoading: false,
+    hasError: false,
+  },
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+  selectors: {
+    getNumOfThings: (state: RootState) => state.thing.things.length,
+  },
+
+  actions: {
+    fetchThings: effect<Models, RootState>(async function(models, getState) {
+      const state = getState();
+      console.log('> Current things:', state.thing.things);
+
+      // Fetch things from API etc.
+      const thing = {
+        id: '1', name:
+        'Foobar', size: 1
+      };
+
+      models.thing.actions.addThing(thing);
+    }),
+
+    addThing: (state: State, action: Action<Thing>): State => ({
+      ...state,
+      things: [...state.things, action.payload],
+    }),
+  },
+};
+
+export type ThingModel = Model<typeof thingModel, State>;
+
+export default thingModel;
+```
+
+```ts
+// store.ts
+
+import { createStore } from 'smook';
+import { State as ThingState, ThingModel } from './thing/thing.model';
+import thingModel from './thing/thing.model';
+
+export interface Models {
+  thing: ThingModel;
+}
+
+export interface RootState {
+  thing: ThingState;
+}
+
+const store = createStore([thingModel]);
+
+export default store;
+```
+
+```tsx
+// Thing.tsx
+
+import React from 'react';
+import { useModel } from 'smook';
+import { Models } from '../store';
+
+const Thing = () => {
+  const thingM = useModel<Models, 'thing'>('thing');
+  const things = thingM.select('things');
+  const hasError = thingM.select('hasError');
+  const isLoading = thingM.select('isLoading');
+  const numOfThings = thingM.select(thingM.selectors.getNumOfThings);
+  const { addThing, clearThings, fetchThings } = thingM.actions;
+
+  React.useEffect(() => {
+    fetchThings();
+  }, []);
+
+  // TODO: use values / actions in render...
+
+  return <div>Thing</div>;
+};
+
+export default Thing;
+```
