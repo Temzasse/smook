@@ -34,11 +34,11 @@ interface ModelDefinition {
 
 type SelectorFn = (...args: any[]) => any;
 
-type AsyncAction<M, S, A> = (
+type EffectFn<M, S, A> = (
   models: M,
   getState: () => S,
   args: A
-) => Promise<any>;
+) => Promise<any> | void;
 
 interface Effect<F> {
   is: string;
@@ -54,7 +54,7 @@ export interface Action<P> {
 export interface Model<M extends ModelDefinition, S extends object> {
   actions: {
     [K in keyof M['actions']]: (
-      payload: M['actions'][K] extends Effect<AsyncAction<any, any, any>>
+      payload: M['actions'][K] extends Effect<EffectFn<any, any, any>>
         ? Unpacked<ArgumentTypes<M['actions'][K]['fn']>[2]>
         : ArgumentTypes<M['actions'][K]>[1] extends Action<any>
         ? ArgumentTypes<M['actions'][K]>[1]['payload']
@@ -71,8 +71,8 @@ export function useModel<M, N extends keyof M>(modelName: N): M[N] {
   return (_useModel(modelName) as unknown) as M[N];
 }
 
-export function effect<M, S, A = void>(fn: AsyncAction<M, S, A>) {
-  return _effect(fn) as Effect<AsyncAction<M, S, A>>;
+export function effect<M, S, A = void>(fn: EffectFn<M, S, A>) {
+  return _effect(fn) as Effect<EffectFn<M, S, A>>;
 }
 
 export function createStore(models: ModelDefinition[]) {
@@ -84,7 +84,7 @@ export function typify<M, S>() {
     useModel: function<N extends keyof M>(modelName: N) {
       return useModel<M, N>(modelName);
     },
-    effect: function<A = void>(fn: AsyncAction<M, S, A>) {
+    effect: function<A = void>(fn: EffectFn<M, S, A>) {
       return effect<M, S, A>(fn);
     },
   };

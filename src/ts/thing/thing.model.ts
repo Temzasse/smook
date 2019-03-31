@@ -24,8 +24,7 @@ const thingModel = {
   },
 
   actions: {
-    logThing: effect<Thing>(async function(models, getState, thing) {
-      await sleep(1000);
+    logThing: effect<Thing>(function(models, getState, thing) {
       console.log('> Thing:', thing.name);
       const state = getState();
       console.log('> Things now:', state.thing.things);
