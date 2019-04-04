@@ -2,6 +2,14 @@ import React from 'react';
 
 // Smook -> State Management hOOK 🔱
 
+// Take ideas from:
+// - https://github.com/reduxjs/react-redux/issues/1179
+// - https://github.com/reduxjs/react-redux/issues/1179#issuecomment-476133300
+
+// Maybe use Proxies to improve perf?
+// - https://github.com/dai-shi/reactive-react-redux
+// - https://github.com/thekashey/proxyequal (no IE11 support!)
+
 const Context = React.createContext({});
 
 const log = {

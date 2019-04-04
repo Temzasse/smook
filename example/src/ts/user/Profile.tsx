@@ -9,7 +9,6 @@ const Profile = () => {
   const profile = userM.select('profile');
   const isLoggedIn = userM.select('isLoggedIn');
   const numOfOrders = orderM.select(orderM.selectors.getNumOfOrders);
-
   const { fetchProfile, login, logout } = userM.actions;
 
   React.useEffect(() => {
