@@ -25,9 +25,10 @@
     "build:watch": "rollup -c --watch",
     "copy:types": "cp ./src/smook.d.ts ./lib/smook.d.ts",
     "install:clean": "rimraf node_modules && npm install",
-    "link:example": "npm link && npm run link:basic && npm run link:typed",
-    "link:basic": "pushd example/basic && npm link smook && popd",
-    "link:typed": "pushd example/typed && npm link smook && popd",
+    "link:example": "npm run link:lib && npm run link:deps",
+    "link:lib": "npm link && pushd example && npm link smook && popd",
+    "_comment_": "https://reactjs.org/warnings/invalid-hook-call-warning.html#duplicate-react",
+    "link:deps": "npm link ./example/node_modules/react",
     "semantic-release": "echo TODO semantic-release",
     "travis-deploy-once": "echo TODO travis-deploy-once"
   },

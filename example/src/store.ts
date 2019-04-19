@@ -1,4 +1,5 @@
-import { createStore } from './smook';
+import { createStore } from 'smook';
+
 import userModel, { State as UserS, UserModel } from './user/user.model';
 import thingModel, { State as ThingS, ThingModel } from './thing/thing.model';
 import orderModel, { State as OrderS, OrderModel } from './order/order.model';

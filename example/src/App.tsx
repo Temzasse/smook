@@ -1,11 +1,11 @@
 import React from 'react';
-import { StoreProvider } from './smook';
-import store from './ts/store';
+import { StoreProvider } from 'smook';
+import store from './store';
 
 // Components
-import Thing from './ts/thing/Thing';
-import Orders from './ts/order/Orders';
-import Profile from './ts/user/Profile';
+import Thing from './thing/Thing';
+import Orders from './order/Orders';
+import Profile from './user/Profile';
 
 const App = () => (
   <div>

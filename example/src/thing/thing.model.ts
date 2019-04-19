@@ -1,6 +1,6 @@
-import { sleep } from '../../helpers';
-import { Model, Action } from '../smook';
+import { Model, Action } from 'smook';
 import { effect } from '../smook.typed';
+import { sleep } from '../helpers';
 import { RootState } from '../store';
 import { Thing } from './thing.types';
 

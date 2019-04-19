@@ -38,13 +38,57 @@ interface Effect<F> {
   fn: F;
 }
 
-/* ******************************** EXPORTS ******************************** */
-export interface Action<P> {
+enum FetchableStatus {
+  INITIAL = 'INITIAL',
+  LOADING = 'LOADING',
+  SUCCESS = 'SUCCESS',
+  FAILURE = 'FAILURE',
+}
+
+interface FetchableInitialState {
+  status: FetchableStatus.INITIAL;
+  error: null;
+}
+
+interface FetchableLoadingState {
+  status: FetchableStatus.LOADING;
+}
+
+interface FetchableFailureState<T> {
+  status: FetchableStatus.FAILURE;
+  error: T;
+}
+
+interface FetchableSuccessState<T> {
+  status: FetchableStatus.SUCCESS;
+  error: null;
+  data: T;
+}
+
+interface FetchableValue<T> {
+  data: T;
+  error: any;
+  status: FetchableStatus;
+}
+
+// TODO
+type FetchableReducer = any;
+
+interface Fetchable {
+  loading: () => FetchableLoadingState;
+  error: <T>(error: T = any) => FetchableFailureState<T>;
+  success: <T>(data: T = any) => FetchableSuccessState<T>;
+  clear: () => FetchableInitialState;
+  reducer: FetchableReducer;
+  value: <T>(initialValue: T) => FetchableValue<T>;
+}
+
+interface Action<P> {
   type: string;
   payload: P;
 }
 
-export interface Model<M extends ModelDefinition, S extends object> {
+interface Model<M extends ModelDefinition, S extends object> {
   actions: {
     [K in keyof M['actions']]: (
       payload: M['actions'][K] extends Effect<EffectFn<any, any, any>>
@@ -60,40 +104,14 @@ export interface Model<M extends ModelDefinition, S extends object> {
   ) => F extends keyof S ? S[F] : F extends SelectorFn ? ReturnType<F> : never;
 }
 
-export function useModel<M, N extends keyof M>(modelName: N): M[N] {
-  return (_useModel(modelName) as unknown) as M[N];
-}
+export function useModel<M, N extends keyof M>(modelName: N): M[N];
 
-export function effect<M, S, A = void>(fn: EffectFn<M, S, A>) {
-  return _effect(fn) as Effect<EffectFn<M, S, A>>;
-}
+export function effect<M, S, A = void>(
+  fn: EffectFn<M, S, A>
+): Effect<EffectFn<M, S, A>>;
 
-export function createStore(models: ModelDefinition[]) {
-  return _createStore(models);
-}
+export function createStore(models: ModelDefinition[]): any;
 
-export function typify<M, S>() {
-  return {
-    useModel: function<N extends keyof M>(modelName: N) {
-      return useModel<M, N>(modelName);
-    },
-    effect: function<A = void>(fn: EffectFn<M, S, A>) {
-      return effect<M, S, A>(fn);
-    },
-  };
-}
+export const StoreProvider = (props: any) => any;
 
-export const fetchable = _fetchable;
-
-export enum FetchableStatus {
-  INITIAL = 'INITIAL',
-  LOADING = 'LOADING',
-  FAILURE = 'FAILURE',
-  SUCCESS = 'SUCCESS',
-}
-
-export interface FetchableValue<D> {
-  data: D;
-  status: FetchableStatus;
-  error: any;
-}
+export const fetchable: Fetchable;

@@ -19,6 +19,8 @@ const Thing = () => {
 
   // clearItems();
 
+  console.log('> Thing | rendering...');
+
   return <div>Things here...</div>;
 };
 

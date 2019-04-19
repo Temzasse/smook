@@ -1,6 +1,6 @@
-import { sleep } from '../../helpers';
-import { Action, Model, fetchable, FetchableValue } from '../smook';
+import { Action, Model, fetchable, FetchableValue } from 'smook';
 import { effect } from '../smook.typed';
+import { sleep } from '../helpers';
 import { Order } from './order.types';
 
 export interface State {
