@@ -16,7 +16,7 @@ const Orders = () => {
 
   React.useEffect(() => {
     fetchOrders();
-  }, []);
+  }, []); // eslint-disable-line
 
   const _addOrder = () => {
     if (orderName) {

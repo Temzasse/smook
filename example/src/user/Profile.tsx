@@ -11,55 +11,54 @@ const Profile = () => {
 
   React.useEffect(() => {
     fetchProfile();
-  }, []);
+  }, []); // eslint-disable-line
 
-  return React.useMemo(() => {
-    console.log('> Profile | rendering...');
-    return (
-      <Wrapper>
-        <h1>Profile:</h1>
+  console.log('> Profile | rendering...');
 
-        <div>Is logged in: {isLoggedIn ? 'Yes' : 'No'}</div>
+  return (
+    <Wrapper>
+      <h1>Profile:</h1>
 
-        <br />
+      <div>Is logged in: {isLoggedIn ? 'Yes' : 'No'}</div>
 
-        <button onClick={() => (isLoggedIn ? logout() : login())}>
-          {isLoggedIn ? 'Logout' : 'Login'}
-        </button>
+      <br />
 
-        {profile.status === 'LOADING' && <div>Loading profile...</div>}
+      <button onClick={() => (isLoggedIn ? logout() : login())}>
+        {isLoggedIn ? 'Logout' : 'Login'}
+      </button>
 
-        {profile.status === 'FAILURE' && <div>Failed to load profile!</div>}
+      {profile.status === 'LOADING' && <div>Loading profile...</div>}
 
-        {profile.status === 'SUCCESS' && (
-          <>
-            <dl>
-              <dt>First name</dt>
-              <dd>{profile.data.firstName}</dd>
+      {profile.status === 'FAILURE' && <div>Failed to load profile!</div>}
 
-              <dt>Last name</dt>
-              <dd>{profile.data.lastName}</dd>
+      {profile.status === 'SUCCESS' && (
+        <>
+          <dl>
+            <dt>First name</dt>
+            <dd>{profile.data.firstName}</dd>
 
-              <dt>Github</dt>
-              <dd>
-                <a
-                  href={profile.data.githubUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {profile.data.githubUrl}
-                </a>
-              </dd>
-            </dl>
-          </>
-        )}
+            <dt>Last name</dt>
+            <dd>{profile.data.lastName}</dd>
 
-        <br />
+            <dt>Github</dt>
+            <dd>
+              <a
+                href={profile.data.githubUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {profile.data.githubUrl}
+              </a>
+            </dd>
+          </dl>
+        </>
+      )}
 
-        <Foo />
-      </Wrapper>
-    );
-  }, [profile, isLoggedIn]);
+      <br />
+
+      <Foo />
+    </Wrapper>
+  );
 };
 
 const Wrapper = styled.div`

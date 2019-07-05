@@ -11,7 +11,7 @@ const Thing = () => {
 
   React.useEffect(() => {
     fetchThings();
-  }, []);
+  }, []); // eslint-disable-line
 
   // fetchItems();
 
