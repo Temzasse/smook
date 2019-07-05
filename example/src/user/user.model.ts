@@ -34,11 +34,11 @@ const userModel = {
       isLoggedIn: false,
     }),
 
-    setProfile: fetchable.reducer('profile'),
+    setProfile: fetchable.reducer<State, 'profile'>('profile'),
 
     fetchProfile: effect(async function(models, getState) {
       try {
-        models.user.actions.setProfile(fetchable.loading); // show loading spinner
+        models.user.actions.setProfile(fetchable.loading()); // show loading spinner
 
         await sleep(); // mock API call
 
@@ -56,7 +56,7 @@ const userModel = {
         console.log('>>> full name', fullName);
       } catch (error) {
         console.log('> Error in fetchProfile', error);
-        models.user.actions.setProfile(fetchable.error(error.message));
+        models.user.actions.setProfile(fetchable.failure(error.message));
       }
     }),
   },

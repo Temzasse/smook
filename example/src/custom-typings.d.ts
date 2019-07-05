@@ -1,3 +1,5 @@
+// TODO: fix eslint to understand typescript!
+
 declare module 'smook' {
   /* ******************************** HELPERS ******************************** */
   type Unpacked<T> = T extends (infer U)[]
@@ -66,20 +68,27 @@ declare module 'smook' {
     data: T;
   }
 
+  type FetchableState =
+    | FetchableInitialState
+    | FetchableLoadingState
+    | FetchableFailureState<any>
+    | FetchableSuccessState<any>;
+
   interface FetchableValue<T> {
     data: T;
     error: any;
     status: FetchableStatus;
   }
 
-  // TODO
-  type FetchableReducer = any;
+  type FetchableReducer = <S = {}, K extends keyof S>(
+    field: K
+  ) => (state: S, action: Action<FetchableState>) => S;
 
   interface Fetchable {
-    loading: () => FetchableLoadingState;
-    error: <T>(error: T = any) => FetchableFailureState<T>;
-    success: <T>(data: T = any) => FetchableSuccessState<T>;
     clear: () => FetchableInitialState;
+    loading: () => FetchableLoadingState;
+    failure: <T>(error: T = '') => FetchableFailureState<T>;
+    success: <T>(data: T = null) => FetchableSuccessState<T>;
     reducer: FetchableReducer;
     value: <T>(initialValue: T) => FetchableValue<T>;
   }

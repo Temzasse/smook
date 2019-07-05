@@ -154,8 +154,8 @@ const fetchableReducer = field => (state, action) => ({
 
 export const fetchable = {
   loading: () => ({ status: 'LOADING' }),
-  error: error => ({ error, status: 'FAILURE' }),
-  success: data => ({ data, status: 'SUCCESS', error: null }),
+  failure: (error = '') => ({ error, status: 'FAILURE' }),
+  success: (data = null) => ({ data, status: 'SUCCESS', error: null }),
   clear: () => ({ status: 'INITIAL', error: null }),
   reducer: fetchableReducer,
   value: initialValue => ({

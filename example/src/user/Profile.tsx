@@ -1,66 +1,65 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useModel } from '../smook.typed';
+import Foo from './Foo';
 
 const Profile = () => {
   const userM = useModel('user');
-  const orderM = useModel('order');
-
   const profile = userM.select('profile');
   const isLoggedIn = userM.select('isLoggedIn');
-  const numOfOrders = orderM.select(orderM.selectors.getNumOfOrders);
   const { fetchProfile, login, logout } = userM.actions;
 
   React.useEffect(() => {
     fetchProfile();
   }, []);
 
-  console.log('> Profile | rendering...');
+  return React.useMemo(() => {
+    console.log('> Profile | rendering...');
+    return (
+      <Wrapper>
+        <h1>Profile:</h1>
 
-  return (
-    <Wrapper>
-      <h1>Profile:</h1>
+        <div>Is logged in: {isLoggedIn ? 'Yes' : 'No'}</div>
 
-      <div>Is logged in: {isLoggedIn ? 'Yes' : 'No'}</div>
+        <br />
 
-      <br />
+        <button onClick={() => (isLoggedIn ? logout() : login())}>
+          {isLoggedIn ? 'Logout' : 'Login'}
+        </button>
 
-      <button onClick={() => (isLoggedIn ? logout() : login())}>
-        {isLoggedIn ? 'Logout' : 'Login'}
-      </button>
+        {profile.status === 'LOADING' && <div>Loading profile...</div>}
 
-      {profile.status === 'LOADING' && <div>Loading profile...</div>}
+        {profile.status === 'FAILURE' && <div>Failed to load profile!</div>}
 
-      {profile.status === 'FAILURE' && <div>Failed to load profile!</div>}
+        {profile.status === 'SUCCESS' && (
+          <>
+            <dl>
+              <dt>First name</dt>
+              <dd>{profile.data.firstName}</dd>
 
-      {profile.status === 'SUCCESS' && (
-        <>
-          <dl>
-            <dt>First name</dt>
-            <dd>{profile.data.firstName}</dd>
+              <dt>Last name</dt>
+              <dd>{profile.data.lastName}</dd>
 
-            <dt>Last name</dt>
-            <dd>{profile.data.lastName}</dd>
+              <dt>Github</dt>
+              <dd>
+                <a
+                  href={profile.data.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {profile.data.githubUrl}
+                </a>
+              </dd>
+            </dl>
+          </>
+        )}
 
-            <dt>Github</dt>
-            <dd>
-              <a
-                href={profile.data.githubUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {profile.data.githubUrl}
-              </a>
-            </dd>
-          </dl>
-        </>
-      )}
+        <br />
 
-      <br />
-
-      <div>Number of orders: {numOfOrders}</div>
-    </Wrapper>
-  );
+        <Foo />
+      </Wrapper>
+    );
+  }, [profile, isLoggedIn]);
 };
 
 const Wrapper = styled.div`
