@@ -1,5 +1,5 @@
 import React from 'react';
-import { log } from './helpers';
+import { log, useForceUpdate, updateId, getChangedModels } from './helpers';
 
 // Smook -> State Management hOOK 🔱
 
@@ -11,17 +11,37 @@ import { log } from './helpers';
 // - https://github.com/dai-shi/reactive-react-redux
 // - https://github.com/thekashey/proxyequal (no IE11 support!)
 
-const Context = React.createContext({});
+// Disable normal context update behaviour since we want to update
+// the components manually via subscriptions
+const calcChangedBits = () => 0;
+const Context = React.createContext({}, calcChangedBits);
 
 export const StoreProvider = ({ store, disableLogs, children }) => {
   const { rootReducer, initialState, models } = store;
   const [state, dispatch] = React.useReducer(rootReducer, initialState);
   const currentState = React.useRef(state);
+  const subscriptions = React.useRef({});
 
   // TODO: is there a better way to log prev + next state?
   // At the moment the next state is not logged in the same group...
   React.useEffect(() => {
     if (!disableLogs) log.state(state);
+
+    const changedModels = getChangedModels(currentState.current, state);
+
+    if (changedModels.length) {
+      console.log(
+        `> Updating components that depend on models: ${changedModels.join(
+          ','
+        )}.`
+      );
+    }
+
+    changedModels.forEach(m => {
+      const affectedHandlers = subscriptions.current[m];
+      affectedHandlers.forEach(handler => handler());
+    });
+
     currentState.current = state; // Update ref to point in the current state
   }, [state]);
 
@@ -31,6 +51,23 @@ export const StoreProvider = ({ store, disableLogs, children }) => {
   };
 
   const getState = () => currentState.current;
+
+  const subscribe = (modelName, handlerFn) => {
+    if (!subscriptions.current[modelName]) {
+      subscriptions.current[modelName] = [];
+    }
+
+    subscriptions.current[modelName].push(handlerFn);
+
+    const unsubscribe = () => {
+      const remaining = subscriptions.current[modelName].filter(
+        x => x !== handlerFn
+      );
+      subscriptions.current[modelName] = remaining;
+    };
+
+    return unsubscribe;
+  };
 
   // Memoize actions since they need to be created only once
   const enhancedActions = React.useMemo(
@@ -76,6 +113,7 @@ export const StoreProvider = ({ store, disableLogs, children }) => {
         models,
         state,
         getState,
+        subscribe,
         dispatch: loggedDispatch,
         actions: enhancedActions,
       }}
@@ -85,9 +123,14 @@ export const StoreProvider = ({ store, disableLogs, children }) => {
   );
 };
 
-// TODO: can we bail out of unnecessary renders?
 export const useModel = name => {
   const store = React.useContext(Context);
+  const forceUpdate = useForceUpdate();
+
+  React.useEffect(() => {
+    const unsubscribe = store.subscribe(name, () => forceUpdate());
+    return () => unsubscribe();
+  }, [store]);
 
   const select = fieldNameOrSelectorFn => {
     if (typeof fieldNameOrSelectorFn === 'string') {
@@ -120,7 +163,7 @@ export const createStore = models => {
 
   const _models = models.reduce((acc, model) => {
     const reducerHandler = Object.entries(model.actions)
-      .filter(([name, fn]) => fn.is !== 'EFFECT')
+      .filter(([, fn]) => fn.is !== 'EFFECT')
       .reduce((acc, [name, fn]) => {
         acc[`${model.name}/${name}`] = fn;
         return acc;
@@ -128,7 +171,7 @@ export const createStore = models => {
 
     model.reducer = (state, action) =>
       reducerHandler[action.type]
-        ? reducerHandler[action.type](state, action)
+        ? updateId(reducerHandler[action.type](state, action))
         : state;
 
     acc[model.name] = model;
@@ -142,10 +185,7 @@ export const createStore = models => {
   };
 };
 
-export const effect = fn => ({
-  is: 'EFFECT',
-  fn,
-});
+export const effect = fn => ({ is: 'EFFECT', fn });
 
 const fetchableReducer = field => (state, action) => ({
   ...state,
@@ -157,10 +197,6 @@ export const fetchable = {
   failure: (error = '') => ({ error, status: 'FAILURE' }),
   success: (data = null) => ({ data, status: 'SUCCESS', error: null }),
   clear: () => ({ status: 'INITIAL', error: null }),
+  value: initial => ({ data: initial, error: null, status: 'INITIAL' }),
   reducer: fetchableReducer,
-  value: initialValue => ({
-    data: initialValue,
-    error: null,
-    status: 'INITIAL',
-  }),
 };

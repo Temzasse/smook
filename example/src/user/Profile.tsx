@@ -4,6 +4,7 @@ import { useModel } from '../smook.typed';
 import Foo from './Foo';
 
 const Profile = () => {
+  const [fooVisible, setFooVisible] = React.useState(false);
   const userM = useModel('user');
   const profile = userM.select('profile');
   const isLoggedIn = userM.select('isLoggedIn');
@@ -25,6 +26,10 @@ const Profile = () => {
 
       <button onClick={() => (isLoggedIn ? logout() : login())}>
         {isLoggedIn ? 'Logout' : 'Login'}
+      </button>
+
+      <button onClick={() => setFooVisible(!fooVisible)}>
+        Toggle foo visibility
       </button>
 
       {profile.status === 'LOADING' && <div>Loading profile...</div>}
@@ -56,7 +61,7 @@ const Profile = () => {
 
       <br />
 
-      <Foo />
+      {fooVisible && <Foo />}
     </Wrapper>
   );
 };
