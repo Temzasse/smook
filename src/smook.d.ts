@@ -1,4 +1,4 @@
-// TODO: fix eslint to understand typescript!
+/* eslint-disable */
 
 /* ******************************** HELPERS ******************************** */
 type Unpacked<T> = T extends (infer U)[]

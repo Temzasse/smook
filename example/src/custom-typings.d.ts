@@ -1,4 +1,4 @@
-// TODO: fix eslint to understand typescript!
+/* eslint-disable */
 
 declare module 'smook' {
   /* ******************************** HELPERS ******************************** */
