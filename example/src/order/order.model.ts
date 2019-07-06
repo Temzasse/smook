@@ -34,6 +34,7 @@ const orderModel = {
     setOrders: fetchable.reducer<State, 'orders'>('orders'),
 
     fetchOrders: effect(async function(models) {
+      console.log('> models', models);
       try {
         // Show loading spinner
         models.order.actions.setOrders(fetchable.loading());

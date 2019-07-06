@@ -52,8 +52,9 @@ const userModel = {
 
         await sleep(2000);
 
+        // NOTE: getState might not return the latest state!
         const fullName = models.user.selectors.getFullName(getState());
-        console.log('>>> full name', fullName);
+        console.log('> Full name', fullName);
       } catch (error) {
         console.log('> Error in fetchProfile', error);
         models.user.actions.setProfile(fetchable.failure(error.message));

@@ -15,10 +15,11 @@ import { log, useForceUpdate, getChangedModels } from './helpers';
 // the components manually via subscriptions
 const calcChangedBits = () => 0;
 const Context = React.createContext({}, calcChangedBits);
+const EFFECT = 'EFFECT';
 
 export const StoreProvider = ({ store, disableLogs, children }) => {
-  const { rootReducer, initialState, models } = store;
-  const [state, dispatch] = React.useReducer(rootReducer, initialState);
+  const { rootReducer, initialState, models, setActions } = store;
+  const [state, _dispatch] = React.useReducer(rootReducer, initialState);
   const currentState = React.useRef(state);
   const subscriptions = React.useRef({});
 
@@ -37,107 +38,109 @@ export const StoreProvider = ({ store, disableLogs, children }) => {
     });
 
     currentState.current = state; // Update ref to point in the current state
-  }, [state]);
+  }, [disableLogs, state]);
 
-  const loggedDispatch = action => {
-    if (!disableLogs) log.action(action, state);
-    dispatch(action);
-  };
-
-  const getState = () => currentState.current;
-
-  const subscribe = (modelName, handlerFn) => {
-    if (!subscriptions.current[modelName]) {
-      subscriptions.current[modelName] = [];
-    }
-
-    subscriptions.current[modelName].push(handlerFn);
-
-    const unsubscribe = () => {
-      const remaining = subscriptions.current[modelName].filter(
-        x => x !== handlerFn
-      );
-      subscriptions.current[modelName] = remaining;
-    };
-
-    return unsubscribe;
-  };
-
-  // Memoize actions since they need to be created only once
-  const enhancedActions = React.useMemo(
-    () =>
-      Object.values(models).reduce((allActionsAcc, model) => {
-        const actions = Object.entries(model.actions).reduce(
-          (modelActionsAcc, [actionName, value]) => {
-            if (value.is === 'EFFECT') {
-              modelActionsAcc[actionName] = (...args) => {
-                loggedDispatch({
-                  type: `${model.name}/${actionName}`,
-                  payload: args,
-                });
-
-                return value.fn(allActionsAcc, getState, ...args);
-              };
-            } else {
-              modelActionsAcc[actionName] = payload =>
-                loggedDispatch({
-                  type: `${model.name}/${actionName}`,
-                  payload,
-                });
-            }
-
-            return modelActionsAcc;
-          },
-          {}
-        );
-
-        allActionsAcc[model.name] = {
-          actions,
-          selectors: model.selectors,
-        };
-
-        return allActionsAcc;
-      }, {}),
-    [] // Having no deps here should be ok?
+  const dispatch = React.useCallback(
+    action => {
+      if (!disableLogs) log.action(action, currentState.current);
+      _dispatch(action);
+    },
+    [disableLogs]
   );
 
+  const { actions, subscribe } = React.useMemo(() => {
+    const subscribe = (modelName, handlerFn) => {
+      if (!subscriptions.current[modelName]) {
+        subscriptions.current[modelName] = [];
+      }
+
+      subscriptions.current[modelName].push(handlerFn);
+
+      const unsubscribe = () => {
+        const remaining = subscriptions.current[modelName].filter(
+          x => x !== handlerFn
+        );
+        subscriptions.current[modelName] = remaining;
+      };
+
+      return unsubscribe;
+    };
+
+    const getState = () => currentState.current;
+
+    const aggregated = Object.values(models).reduce((modelsAcc, model) => {
+      const modelActions = Object.entries(model.actions).reduce(
+        (actionsAcc, [actionName, value]) => {
+          if (value.is === EFFECT) {
+            actionsAcc[actionName] = (...args) => {
+              dispatch({
+                type: `${model.name}/${actionName}`,
+                payload: args,
+              });
+
+              return value.fn(modelsAcc, getState, ...args);
+            };
+          } else {
+            actionsAcc[actionName] = payload =>
+              dispatch({
+                type: `${model.name}/${actionName}`,
+                payload,
+              });
+          }
+
+          return actionsAcc;
+        },
+        {}
+      );
+
+      modelsAcc[model.name] = {
+        actions: modelActions,
+        selectors: model.selectors,
+      };
+
+      return modelsAcc;
+    }, {});
+
+    const actions = Object.entries(aggregated).reduce((acc, [key, val]) => {
+      acc[key] = val.actions;
+      return acc;
+    }, {});
+
+    // Make it possible to access actions directly from the store instance
+    setActions(actions);
+
+    return { actions, subscribe };
+  }, [dispatch]); // eslint-disable-line
+
   return (
-    <Context.Provider
-      value={{
-        models,
-        state,
-        getState,
-        subscribe,
-        dispatch: loggedDispatch,
-        actions: enhancedActions,
-      }}
-    >
+    <Context.Provider value={{ state, actions, models, subscribe }}>
       {children}
     </Context.Provider>
   );
 };
 
 export const useModel = name => {
-  const store = React.useContext(Context);
+  const { state, actions, models, subscribe } = React.useContext(Context);
   const forceUpdate = useForceUpdate();
 
+  // NOTE: deps array can be empty since none of the used deps will not change
   React.useEffect(() => {
-    const unsubscribe = store.subscribe(name, () => forceUpdate());
+    const unsubscribe = subscribe(name, () => forceUpdate());
     return () => unsubscribe();
-  }, [store]);
+  }, []); // eslint-disable-line
 
   const select = fieldNameOrSelectorFn => {
     if (typeof fieldNameOrSelectorFn === 'string') {
-      return store.state[name][fieldNameOrSelectorFn];
+      return state[name][fieldNameOrSelectorFn];
     } else {
-      return fieldNameOrSelectorFn(store.state);
+      return fieldNameOrSelectorFn(state);
     }
   };
 
   return {
     select,
-    actions: store.actions[name].actions,
-    selectors: store.models[name].selectors,
+    actions: actions[name],
+    selectors: models[name].selectors,
   };
 };
 
@@ -157,7 +160,7 @@ export const createStore = models => {
 
   const _models = models.reduce((acc, model) => {
     const reducerHandler = Object.entries(model.actions)
-      .filter(([, fn]) => fn.is !== 'EFFECT')
+      .filter(([, fn]) => fn.is !== EFFECT)
       .reduce((acc, [name, fn]) => {
         acc[`${model.name}/${name}`] = fn;
         return acc;
@@ -172,14 +175,32 @@ export const createStore = models => {
     return acc;
   }, {});
 
+  let _actions = null;
+
+  const setActions = actions => {
+    _actions = actions;
+  };
+
+  const getActions = () => {
+    if (!_actions) {
+      throw Error(
+        'You need to render the Provider before accessing any actions from the instance store!'
+      );
+    }
+
+    return _actions;
+  };
+
   return {
     rootReducer,
     initialState,
+    setActions,
+    getActions,
     models: _models,
   };
 };
 
-export const effect = fn => ({ is: 'EFFECT', fn });
+export const effect = fn => ({ is: EFFECT, fn });
 
 const fetchableReducer = field => (state, action) => ({
   ...state,
