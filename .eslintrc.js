@@ -13,6 +13,8 @@ module.exports = {
     'prettier/standard',
   ],
 
+  plugins: ['react-hooks'],
+
   parserOptions: {
     ecmaVersion: 2018,
     sourceType: 'module',
@@ -40,6 +42,9 @@ module.exports = {
 
     'no-var': 'error', // No `var` plz - we are not savages anymore
     'react/prop-types': 0,
+
+    'react-hooks/rules-of-hooks': 'error',
+    'react-hooks/exhaustive-deps': 'warn',
   },
 
   settings: {
