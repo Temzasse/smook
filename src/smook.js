@@ -25,16 +25,10 @@ export const StoreProvider = ({ store, disableLogs, children }) => {
   // TODO: is there a better way to log prev + next state?
   // At the moment the next state is not logged in the same group...
   React.useEffect(() => {
-    if (!disableLogs) log.state(state);
-
     const changedModels = getChangedModels(currentState.current, state);
 
-    if (changedModels.length > 0) {
-      console.log(
-        `> Updating components that depend on models: ${changedModels.join(
-          ','
-        )}.`
-      );
+    if (changedModels.length > 0 && !disableLogs) {
+      log.state(state, changedModels);
     }
 
     changedModels.forEach(m => {

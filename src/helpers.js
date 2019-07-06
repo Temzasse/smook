@@ -3,21 +3,26 @@ import React from 'react';
 const logStyles = (color, bgColor) => `
   color: ${color};
   background: ${bgColor};
-  padding: 1px 0px;
-  line-height: 11px;
+  padding: 0px;
+  line-height: 15px;
   border-radius: 99px;
   font-size: 8px;
   font-weight: 700;
   text-transform: uppercase;
+  display: inline-block;
 `;
 
 export const log = {
-  state: state => {
-    console.log('%c next ', logStyles('#197813', '#9bfa96'), state);
+  state: (state, changedModels = []) => {
+    const mList = changedModels.join(', ');
+    console.groupCollapsed('State updated');
+    console.log('%c updated ', logStyles('#197813', '#9bfa96'), state);
+    console.log('%c models ', logStyles('#4f5a8c', '#e9eaf0'), mList);
+    console.groupEnd();
   },
   action: (action, state) => {
-    console.group(`${action.type}`);
-    console.log('%c prev ', logStyles('#094d57', '#00d8ff'), state);
+    console.groupCollapsed(`Action | ${action.type}`);
+    console.log('%c current ', logStyles('#094d57', '#00d8ff'), state);
     console.log('%c payload ', logStyles('#871387', '#ffbcff'), action.payload);
     console.groupEnd();
   },
