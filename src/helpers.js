@@ -1,27 +1,24 @@
 import React from 'react';
 
-const commonLogStyles = 'padding: 2px; border-radius: 2px;';
+const logStyles = (color, bgColor) => `
+  color: ${color};
+  background: ${bgColor};
+  padding: 1px 0px;
+  line-height: 11px;
+  border-radius: 99px;
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+`;
 
 export const log = {
   state: state => {
-    console.log(
-      '%c next ',
-      `background: #b3ffaf; color: #063b04; ${commonLogStyles}`,
-      state
-    );
+    console.log('%c next ', logStyles('#197813', '#9bfa96'), state);
   },
   action: (action, state) => {
     console.group(`${action.type}`);
-    console.log(
-      '%c prev ',
-      `background: #00d8ff; color: #022126; ${commonLogStyles}`,
-      state
-    );
-    console.log(
-      '%c payload ',
-      `background: #ffbcff; color: #360436; ${commonLogStyles}`,
-      action.payload
-    );
+    console.log('%c prev ', logStyles('#094d57', '#00d8ff'), state);
+    console.log('%c payload ', logStyles('#871387', '#ffbcff'), action.payload);
     console.groupEnd();
   },
 };
@@ -35,23 +32,11 @@ export const useForceUpdate = () => {
   return memoizedDispatch;
 };
 
-const guid = () => {
-  function s4() {
-    return Math.floor((1 + Math.random()) * 0x10000)
-      .toString(16)
-      .substring(1);
-  }
-  return `${s4()}${s4()}-${s4()}-${s4()}-${s4()}-${s4()}${s4()}${s4()}`;
-};
-
-// Use `__ID__` hash to keep track of changed models when state is updated
-export const updateId = state => ({ ...state, __ID__: guid() });
-
 export const getChangedModels = (prev, next) => {
   return Object.entries(next)
     .map(([key, nextStateVal]) => {
       const prevStateVal = prev[key];
-      return nextStateVal.__ID__ !== prevStateVal.__ID__ ? key : null;
+      return Object.is(nextStateVal, prevStateVal) ? null : key;
     })
     .filter(Boolean);
 };

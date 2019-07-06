@@ -1,5 +1,5 @@
 import React from 'react';
-import { log, useForceUpdate, updateId, getChangedModels } from './helpers';
+import { log, useForceUpdate, getChangedModels } from './helpers';
 
 // Smook -> State Management hOOK 🔱
 
@@ -29,7 +29,7 @@ export const StoreProvider = ({ store, disableLogs, children }) => {
 
     const changedModels = getChangedModels(currentState.current, state);
 
-    if (changedModels.length) {
+    if (changedModels.length > 0) {
       console.log(
         `> Updating components that depend on models: ${changedModels.join(
           ','
@@ -171,7 +171,7 @@ export const createStore = models => {
 
     model.reducer = (state, action) =>
       reducerHandler[action.type]
-        ? updateId(reducerHandler[action.type](state, action))
+        ? reducerHandler[action.type](state, action)
         : state;
 
     acc[model.name] = model;

@@ -48,7 +48,8 @@ const orderModel = {
 
         models.order.actions.setOrders(fetchable.success(orders));
 
-        await sleep(3000);
+        console.log('> Refetching profile in 10 seconds...');
+        await sleep(10000);
         models.user.actions.fetchProfile();
       } catch (error) {
         console.log('> Error in fetchOrders', error);
